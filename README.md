@@ -1,2 +1,6 @@
 # project-skydrop
-Some random tools I made during the Project Skydrop treasure hunt.
+
+Some random tools I made during the Project Skydrop treasure hunt:
+
+ * Base 3 visualizer and decoder.  Shows four strips of base3 symbols from the trophy puzzle, along with their corresponding base-3, base-16, and ASCII decodings.
+   * [Demo](https://doranchak.github.io/project-skydrop/base3.html)

@@ -1,0 +1,543 @@
+<html>
+    <head>
+        <style>
+
+            .symbols, .by3 {
+                line-height: 1;                /* Set line height to 1 for compactness */
+                font-family: 'Courier New', monospace; /* Use a monospace font */
+                text-rendering: optimizeLegibility; /* Improve text rendering */
+                letter-spacing: 1px;
+            }
+            .by3 {
+                text-wrap: nowrap;
+                margin-bottom: 0.5em;
+            }
+            .ascii {
+                margin-bottom: 0.5em;
+            }
+            #strips {
+                font-family:'Courier New', Courier, monospace;
+                margin-top: 1em;
+            }
+            #strip_table {
+                border-collapse: collapse; 
+                margin-bottom: 1em;                
+            }
+            #strip_table table, #strip_table th, #strip_table td {
+                border: 1px solid lightgray; /* Sets a light gray border */
+                padding: 4px; /* Adds padding for better readability */
+            }
+            #output_table {
+                border-collapse: collapse; 
+                margin-bottom: 1em;
+                margin-left: 1em;
+            }
+            #output_table table, #output_table th, #output_table td {
+                border: 1px solid lightgray; /* Sets a light gray border */
+                padding: 4px; /* Adds padding for better readability */
+            }
+            .label {
+                text-align: right;
+                font-style: italic;
+                color: #060;
+            }
+            .data {
+                font-family:'Courier New', Courier, monospace;
+            }
+            .pt {
+                font-family:'Courier New', Courier, monospace;
+                margin-bottom: 1em;
+                margin-left: 1em;
+            }
+        </style>
+        <script src="base3_v2.js"></script>
+        <script>
+            var best_pt_score = 100000;
+            var best_pt1 = "";
+            var best_pt2 = "";
+            var best_params;
+            var best_ioc_diff = 100000;
+            var combos_tested = 0;
+            function draw() {
+                let html = "";
+                for (let i=0; i<strips_str.length; i++) {
+                    let base3 = "";
+                    let shapes = "";
+                    html += "<table id='strip_table'>";
+                    for (let row=0; row<strips_str[i].length; row++) {
+                        html += "<tr>";
+                        for (let col=0; col<strips_str[i][row].length; col++) {
+                            let val = strips_str[i][row][col];
+                            html += "<td>" + shape_for(val) + "</td>";
+                            if (val != "3") shapes += shape_for(val);
+                            base3 += digit_for(val);
+                        }
+                        html += "</tr>";
+                    }
+                    html += "</table>";
+                    html += "<div class=\"shapes\"><u>Shapes</u>: " + shapes + "</div>";
+                    html += "<div class=\"base3\"><u>Base03</u>: " + base3 + "</div>";
+                    let converted = convertBase3String(base3);
+                    // let base10 = base3ToBase10(base3);
+                    // console.log(base10);
+                    // let base16 = base10ToBase16(base10);
+                    // console.log(base16);
+                    html += "<div class=\"base16\"><u>Base16</u>: " + converted.base16 + "</div>";
+                    let ascii = base16ToAscii(converted.base16);
+                    html += "<div class=\"ascii\">&nbsp;<u>ASCII</u>: " + ascii + "</div>";
+                }
+                document.getElementById("strips").innerHTML = html;
+            }
+            function shape_for(num) {
+                if (num == "0") return "_";
+                if (num == "1") return "O";
+                if (num == "3") return "&#9651;";
+                if (num == "4") return "&#9633;";
+            }
+            function digit_for(num) {
+                if (num == "0") return "0";
+                if (num == "1") return "1";
+                if (num == "4") return "2";
+                return "";
+            }
+            function convertBase3String(base3String) {
+                // Convert base-3 string to base-10 using BigInt
+                let base10BigInt = BigInt('0');
+                const base = BigInt(3);
+                
+                for (let i = 0; i < base3String.length; i++) {
+                    base10BigInt = base10BigInt * base + BigInt(base3String[i]);
+                }
+
+                // Convert the BigInt to base-10 string
+                const base10String = base10BigInt.toString(10);
+
+                // Convert the BigInt to base-16 string
+                const base16String = base10BigInt.toString(16);
+
+                return {
+                    base10: base10String,
+                    base16: base16String
+                };
+            }
+
+            function base16ToAscii(hexString) {
+                let asciiString = '';
+                // Process every two hex characters
+                for (let i = 0; i < hexString.length; i += 2) {
+                    let hexPair = hexString.substring(i, i + 2);
+                    // Convert hex pair to decimal, then to ASCII character
+                    asciiString += String.fromCharCode(parseInt(hexPair, 16));
+                }
+                return asciiString;                
+            }
+
+            // var shape_order = [0, 1, 2]; // list of shapes (normalized)
+            var orderings = [
+                [0, 1, 2],
+                [0, 2, 1],
+                [1, 0, 2],
+                [1, 2, 0],
+                [2, 0, 1],
+                [2, 1, 0]
+            ];
+            var alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            // shapes are 0, 1, 3, 4  (ignore 3, the triangle)
+            // so only considering {0,1,4}
+            // shape_ordering specifies indices of that set.
+            // row_ordering does the same but for the strip rows
+            function decode(unit_width, shape_ordering, row_ordering, shifts, periods, generate_html) {
+                combos_tested++;
+                let strips_str_backup = JSON.parse(JSON.stringify(strips_str)); // keep a copy because we might change periods
+                for (let i=0; i<periods.length; i++) {
+                    let per = periods[i];
+                    if (per > 1) {
+                        for (let j=0; j<strips_str.length; j++) {
+                            strips_str[j][i] = period(strips_str[j][i], per);
+                        }                        
+                    }
+                }
+                let info = "<p>Shape ordering: " + shape_ordering.join("") + ", Row ordering: " + row_ordering.join("") + ", Shifts: " + shifts + ", periods: " + periods + "</p>";
+                let html = info;
+                let unprintable = 0;
+                let pt = "";
+                for (let i=0; i<strips_str.length; i++) {
+                    let html_strips = "";
+                    if (generate_html) html_strips += "<table id='output_table'>";
+                    // row1: symbols in the given order
+                    // row2: base3 representation
+                    // row3: integer representation
+                    // row4: hex representation
+                    // row5: base3 -> alpha1
+                    // row6: base3 -> alpha2
+                    // row7: hex -> ascii (every 5 columns)
+                    
+                    let html_row1 = "<tr><td></td>";
+                    let html_row2 = "<tr><td class=\"label\">Base3</td>";
+                    let html_row3 = "<tr><td class=\"label\">Int</td>";
+                    let html_row4 = "<tr><td class=\"label\">Hex</td>";
+                    let html_row5 = "<tr><td class=\"label\">ASCII</td>";
+                    let html_row6 = "<tr><td class=\"label\">ASCII</td>";
+                    let html_3 = "<div class=\"by3\">";
+                    let base3 = [];
+                    let symbols = "";
+                    let prev_hex;
+                    let combine = 0;
+                    for (let col=0; col<strips_str[i][0].length; col++) {
+                        for (let row=0; row<3; row++) {
+                            let row_reordered = row_ordering[row]; 
+                            let col_shifted = (strips_str[i][0].length + col + shifts[row_reordered]) % strips_str[i][0].length;
+                            // symbols
+                            let symbol = strips_str[i][row_reordered][col_shifted];                            
+                            if (symbol == "3") symbol = "0"; // ignore triangles for now
+                            symbols += shape_for(symbol);
+                            if (generate_html) html_3 += shape_for(symbol);
+                            // base3
+                            symbol_int = parseInt(symbol); // {0, 1, 4}
+                            if (symbol_int == 4) symbol_int = 2; // normalize
+                            symbol_int = shape_ordering[symbol_int];
+                            base3.push(symbol_int);
+                            if (base3.length == unit_width) {
+                                integer = 0; let mult = 1;
+                                for (let k=base3.length-1; k>=0; k--) {
+                                    integer += mult*base3[k];
+                                    mult *= 3;
+                                }
+                                if (generate_html) html_row1 += "<td class='symbols'>" + symbols + "</td>";
+                                symbols = "";
+                                if (generate_html) html_row2 += "<td class='data'>" + base3.join("") + "</td>";
+                                base3 = [];
+                                if (generate_html) html_row3 += "<td class='data'>" + integer + "</td>";
+                                let hex = integer.toString(16);
+                                if (generate_html) html_row4 += "<td class='data'>" + hex + "</td>";
+
+                                if (unit_width != 3) {
+                                    let ascii = '_';
+                                    if (integer >= 32 && integer <=126) ascii = String.fromCharCode(integer); // ignore unprintable ascii
+                                    else unprintable++;
+                                    if (generate_html) html_row5 += "<td class='data'>" + ascii + "</td>";
+                                    pt += ascii;
+                                }
+
+                                // special case
+                                if (combine) {
+                                    // console.log(prev_hex, hex);
+                                    ascii = "_";
+                                    let new_hex = "";
+                                    if (prev_hex.length > 1) new_hex += prev_hex[1]; 
+                                    else new_hex += prev_hex;
+                                    if (hex.length > 1) new_hex += hex[1]; 
+                                    else new_hex += hex;
+
+                                    integer = parseInt(new_hex, 16)
+                                    if (integer >= 32 && integer <=126) ascii = String.fromCharCode(integer); // ignore unprintable ascii
+                                    else unprintable++;
+
+                                    if (generate_html) html_row6 += "<td class='data'>" + ascii;
+                                        + "</td>";
+
+                                    pt += ascii;
+                                } else html_row6 += "<td class='data'></td>";
+                                prev_hex = hex;
+                                combine = 1-combine;
+                            }
+                        }
+                        if (generate_html) html_3 += "|";
+
+                    }
+                    if (generate_html) {
+                        html_row1 += "</tr>";
+                        html_row2 += "</tr>";
+                        html_row3 += "</tr>";
+                        html_row4 += "</tr>";
+                        html_row5 += "</tr>";
+                        html_row6 += "</tr>";
+                        html_strips += html_row1 + html_row2 + html_row3 + html_row4 + html_row5 + html_row6;
+                        html_strips += "</table>";
+                        html_3 += "</div>";
+                        html_strips = html_3 + html_strips;
+                    }
+                    html += html_strips;
+                }  // strips loop
+                if (generate_html) html += "<div class='pt'>Plaintext: " + unprintable + " " + htmlEntities(pt) + "</div>";
+                if (unprintable < best_pt_score) {
+                    best_pt_score = unprintable;
+                    best_pt1 = pt;
+                    best_params = info;
+                    console.log("New best");
+                    console.log(best_pt_score, best_pt1, best_params);
+                }
+                if (generate_html) document.getElementById("output").innerHTML += html;
+                // console.log(unprintable, pt);
+                strips_str = JSON.parse(JSON.stringify(strips_str_backup));
+
+            }
+            function decode_noascii(unit_width, shape_ordering, row_ordering, shifts, periods, generate_html) {
+                combos_tested++;
+                let strips_str_backup = JSON.parse(JSON.stringify(strips_str)); // keep a copy because we might change periods
+                for (let i=0; i<periods.length; i++) {
+                    let per = periods[i];
+                    if (per > 1) {
+                        for (let j=0; j<strips_str.length; j++) {
+                            strips_str[j][i] = period(strips_str[j][i], per);
+                        }                        
+                    }
+                }
+                let info = "<p>Shape ordering: " + shape_ordering.join("") + ", Row ordering: " + row_ordering.join("") + ", Shifts: " + shifts + ", periods: " + periods + "</p>";
+                let html = info;
+                let unprintable = 0;
+                let pt1 = "";
+                let pt2 = "";
+                for (let i=0; i<strips_str.length; i++) {
+                    if (generate_html) html += "<table id='output_table'>";
+                    
+                    let html_row1 = "<tr><td></td>";
+                    let html_row2 = "<tr><td class=\"label\">Base3</td>";
+                    let html_row3 = "<tr><td class=\"label\">Int</td>";
+                    let html_row4 = "<tr><td class=\"label\">Hex</td>";
+                    let html_row5 = "<tr><td class=\"label\">ASCII1</td>";
+                    let html_row6 = "<tr><td class=\"label\">ASCII2</td>";
+
+                    let base3 = [];
+                    let symbols = "";
+                    for (let col=0; col<strips_str[i][0].length; col++) {
+                        for (let row=0; row<3; row++) {
+                            let row_reordered = row_ordering[row]; 
+                            let col_shifted = (strips_str[i][0].length + col + shifts[row_reordered]) % strips_str[i][0].length;
+                            // symbols
+                            let symbol = strips_str[i][row_reordered][col_shifted];
+                            if (symbol == "3") symbol = "0"; // ignore triangles for now
+                            symbols += shape_for(symbol);
+                            // base3
+                            symbol_int = parseInt(symbol); // {0, 1, 4}
+                            if (symbol_int == 4) symbol_int = 2; // normalize
+                            symbol_int = shape_ordering[symbol_int];
+                            base3.push(symbol_int);
+                            if (base3.length == unit_width) {
+                                integer = 0; let mult = 1;
+                                for (let k=base3.length-1; k>=0; k--) {
+                                    integer += mult*base3[k];
+                                    mult *= 3;
+                                }
+                                if (generate_html) html_row1 += "<td class='symbols'>" + symbols + "</td>";
+                                symbols = "";
+                                if (generate_html) html_row2 += "<td class='data'>" + base3.join("") + "</td>";
+                                base3 = [];
+                                if (generate_html) html_row3 += "<td class='data'>" + integer + "</td>";
+                                if (generate_html) html_row4 += "<td class='data'>" + integer.toString(16) + "</td>";
+                                let ascii = alphabet[integer % 26];
+                                pt1 += ascii;
+                                if (generate_html) html_row5 += "<td class='data'>" + ascii + "</td>";
+                                ascii = alphabet[(26 + integer - 1) % 26];
+                                if (generate_html) html_row6 += "<td class='data'>" + ascii + "</td>";
+                                pt2 += ascii;
+                            }
+                        }
+                    }
+                    if (generate_html) {
+                        html_row1 += "</tr>";
+                        html_row2 += "</tr>";
+                        html_row3 += "</tr>";
+                        html_row4 += "</tr>";
+                        html_row5 += "</tr>";
+                        html_row6 += "</tr>";
+                        html += html_row1 + html_row2 + html_row3 + html_row4 + html_row5 + html_row6;
+                        html += "</table>";
+                    }
+                }
+                let ioc_diff = Math.abs(0.068-computeIoC(pt1));
+                if (generate_html) html += "<div class='pt'>Plaintext: " + unprintable + " iocdiff " + ioc_diff + " " + htmlEntities(pt1) + "<br>" + htmlEntities(pt2) + "</div>";
+                // if (unprintable < best_pt_score) {
+                //     best_pt_score = unprintable;
+                //     best_pt = pt;
+                //     best_params = info;
+                // }
+                if (ioc_diff < best_ioc_diff) {
+                    best_pt1 = pt1;
+                    best_pt2 = pt2;
+                    best_params = info;
+                    best_ioc_diff = ioc_diff;
+                }
+                if (generate_html) document.getElementById("output").innerHTML += html;
+
+                strips_str = JSON.parse(JSON.stringify(strips_str_backup));
+
+            }
+            function decode_base3(shape_ordering, row_ordering) {
+                combos_tested++;
+                let info = "<p>Shape ordering: " + shape_ordering.join("") + ", Row ordering: " + row_ordering.join("") + "</p>";
+                let html = info;
+                let unprintable = 0;
+                let pt = "";
+                for (let i=0; i<strips_str.length; i++) {
+                    let html_3 = "<div class=\"by3\">";
+                    let base3 = "";
+                    for (let row=0; row<3; row++) {
+                        for (let col=0; col<strips_str[i][0].length; col++) {
+                            let row_reordered = row_ordering[row]; 
+                            // symbols
+                            let symbol = strips_str[i][row_reordered][col];                            
+                            if (symbol == "3") continue;
+                            // base3
+                            symbol_int = parseInt(symbol); // {0, 1, 4}
+                            if (symbol_int == 4) symbol_int = 2; // normalize
+                            symbol_int = shape_ordering[symbol_int];
+                            base3 += "" + symbol_int;
+                        }
+                    }
+                    html_3 += base3 + "</div>";
+                    html += html_3;
+                }  // strips loop
+                document.getElementById("output").innerHTML += html;
+            }
+
+            function computeIoC(str) {
+                // assuming uppercase [A-Z]
+
+                let frequencies = {};
+                let n = str.length;
+
+                // Count the frequency of each character
+                for (let char of str) {
+                    frequencies[char] = (frequencies[char] || 0) + 1;
+                }
+
+                // Compute the numerator: sum of f_i * (f_i - 1)
+                let numerator = 0;
+                for (let key in frequencies) {
+                    let f = frequencies[key];
+                    numerator += f * (f - 1);
+                }
+
+                // Compute the denominator: n * (n - 1)
+                let denominator = n * (n - 1);
+
+                // Return IoC
+                return numerator / denominator;
+            }
+
+            function period(str, period) {
+                let result = "";
+                for (let i=0; i<period; i++) {
+                    for (let j=i; j<str.length; j+=period) {
+                        result += str.charAt(j);
+                    }
+        		}
+		        return result;
+	        }
+
+            function htmlEntities(str) {
+               return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            }
+            function init2() {
+                draw();
+                for (let s=0; s<strips_str.length; s++) {
+                let a = [];
+                let k=0;
+                for (var row=0; row<3; row++) a[row] = "";
+                for (var row=0; row<strips_str[s].length; row++) {
+                    for (var col=0; col<strips_str[s][row].length; col++) {                    
+                        a[k] += (strips_str[s][row][col]);
+                        k = (k+1) % 3;
+                    }
+                }
+                for (var i=0; i<a.length; i++) console.log(a[i]);
+                }
+            }
+            function init() {
+                draw();
+
+                let unit_size = 5;
+                let p1_min = 1;
+                let p1_max = 1;
+                let p2_min = 1;
+                let p2_max = 1;
+                let p3_min = 1;
+                let p3_max = 1;
+                let s1_min = 0;
+                let s1_max = 0;
+                let s2_min = 0;
+                let s2_max = 0;
+                let s3_min = 0;
+                let s3_max = 0;
+
+                // possible shifts: 
+                // let shifts = [-105, -70, -35, 0, 35, 70, 105];
+
+                // let p1_min = 1;
+                // let p1_max = 3;
+                // let p2_min = 1;
+                // let p2_max = 3;
+                // let p3_min = 1;
+                // let p3_max = 3;
+                // let s1_min = -3;
+                // let s1_max = 3;
+                // let s2_min = -3;
+                // let s2_max = 3;
+                // let s3_min = -3;
+                // let s3_max = 3;
+
+                for (let i=0; i<orderings.length; i++) {
+                    for (let j=0; j<1; j++) {
+                        for (let p1=p1_min; p1<=p1_max; p1++) {
+                            for (let p2=p2_min; p2<=p2_max; p2++) {
+                                for (let p3=p3_min; p3<=p3_max; p3++) {
+                                    // for (let s1 = s1_min; s1 <= s1_max; s1++) {
+                                        // for (let s2 = s2_min; s2 <= s2_max; s2++) {
+                                            // for (let s3 = s3_min; s3 <= s3_max; s3++) {
+                                                // decode(unit_size, orderings[i], orderings[j], [0,0,0], [p1,p2,p3], 1);
+                                                decode_base3(orderings[i], orderings[j]);
+                                            // }
+                                        // }
+                                    // }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // for (let i=0; i<orderings.length; i++) {
+                //     for (let j=0; j<orderings.length; j++) {
+                //         for (let p1=p1_min; p1<=p1_max; p1++) {
+                //             for (let p2=p2_min; p2<=p2_max; p2++) {
+                //                 for (let p3=p3_min; p3<=p3_max; p3++) {
+                //                     for (let s1=0; s1<shifts.length; s1++) {
+                //                         for (let s2=0; s2<shifts.length; s2++) {
+                //                             for (let s3=0; s3<shifts.length; s3++) {
+                //                                 decode(unit_size, orderings[i], orderings[j], [shifts[s1], shifts[s2], shifts[s3]], [p1,p2,p3], 0);
+                //                             }                                        
+                //                         }
+                //                     }
+                //                 }
+                //             }
+                //         }
+                //     }
+                // }
+
+                let html = "<div class='pt'>" + combos_tested + " TESTED, BEST PLAINTEXT: " + best_pt_score + " ioc_diff " + best_ioc_diff + " " + htmlEntities(best_pt1) + "<br>" + htmlEntities(best_pt2) + "</div>" + best_params;
+                document.getElementById("output").innerHTML += html;
+
+                // let sequence = "";
+                // for (let i=0; i<strips_str.length; i++) {
+                //     for (let col=0; col<strips_str[i][0].length; col++) {
+                //         let sum = 0;
+                //         for (let row=0; row<3; row++) {
+                //             let num = parseInt(strips_str[i][row][col]);
+                //             if (num == 4) num = 2;
+                //             if (num == 3) num = 0;
+                //             sum += num;
+                //         }
+                //         sequence += sum + " ";
+                //     }
+                // }
+                // console.log(sequence);
+
+            }
+
+        </script>        
+    </head>
+    <body onload="draw()">
+        <div id="strips"></div>
+        <div id="output"></div>
+    </body>
+</html>
