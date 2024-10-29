@@ -1,0 +1,78 @@
+<html>
+    <head>
+        <style>
+            #plaintext {
+                font-family:'Courier New', Courier, monospace;
+                margin-top: 1em;
+            }
+
+            #word_list {
+                font-size: 10pt;
+                margin-top: 2em;
+            }
+        </style>
+        <script src="matrix1.js"></script>
+        <script src="matrix2.js"></script>
+        <script>
+            function getWord1(word) {
+                for (let i=0; i<matrix1.length; i++) {
+                    if (matrix1[i][0] == word) return matrix1[i][1];
+                }
+            }
+            function addWord(word) {
+                document.getElementById('words').value += " " + word;
+                decode();
+            }
+            function dumpWords() {
+                let html = "";
+                for (let i=0; i<matrix1.length; i++) {
+                    html += "<a href=\"#\" onclick=\"addWord('" + matrix1[i][0] + "')\">" + matrix1[i][0] + "</a> ";
+                }
+                document.getElementById("word_list").innerHTML = html;
+            }
+            function decode() {
+                let text = document.getElementById("words").value;
+                let words = text.split(/\s+/).filter(word => word.length > 0);
+                // console.log(words);
+                var html = "";
+                var pt_array = [];
+                for (let i=0; i<words.length; i++) {
+                    let plaintext = getWord1(words[i]);
+                    if (plaintext) {
+                        pt_array.push(plaintext);
+                        html += plaintext + "<br>";
+                    }
+                }
+                html += "<br>";
+                let pt_width = 0;
+                if (pt_array && pt_array[0]) {
+                    for (let col=0; col<pt_array[0].length; col++) {
+                        for (let row=0; row<pt_array.length; row++) {
+                            html += pt_array[row][col];
+                            pt_width++;
+                        }
+                        if (pt_width >= 100) {
+                            html += "<br>";
+                            pt_width = 0;
+                        }
+                    }
+                }
+
+                document.getElementById('plaintext').innerHTML = html;
+                
+            }
+            function init() {
+                decode();
+                dumpWords();
+            }
+        </script>        
+    </head>
+    <body onload="init()">
+        <textarea cols="80" rows="4" id="words" onkeyup="decode()">century throw task corn library liar artefact seat general daring reduce unlock</textarea>
+
+        <div id="plaintext">
+        </div>
+
+        <div id="word_list"></div>
+    </body>
+</html>

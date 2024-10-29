@@ -6,3 +6,5 @@ Some random tools I made during the Project Skydrop treasure hunt:
    * [Demo](https://doranchak.github.io/project-skydrop/base3.html)
  * Distance calculator.  A quick and dirty distance calculator for two GPS coordinates.  Calculates distance and bearing, and embeds maps for the two points.  First point is hard-coded to the location of the trophy.
    * [Demo](https://doranchak.github.io/project-skydrop/distance.html)   
+ * "Final Puzzle" decoder.  Select words from the BIP-39 wordlist and the tool dumps the 21 messages generated from them.
+   * [Demo](https://doranchak.github.io/project-skydrop/final-puzzle.html)   
