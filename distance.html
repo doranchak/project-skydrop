@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+    <style>
+        #map, #map2 {
+            height: 400px;  /* Adjust height as needed */
+            width: 100%;
+        }
+    </style>
+<style>
+    .lab {
+        text-align: right;
+        font-weight: bold;
+    }
+    button {
+        margin-top: 1em;
+    }
+</style>
+<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+<script>
+   LAT = 42.59064;
+   LONG = -72.38941;
+
+// Function to convert degrees to radians
+function toRadians(degrees) {
+    return degrees * Math.PI / 180;
+}
+
+// Function to convert radians to degrees
+function toDegrees(radians) {
+    return radians * 180 / Math.PI;
+}
+
+// Function to get the cardinal direction from a bearing
+function getCardinalDirection(bearing) {
+    const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+    const index = Math.round(bearing / 22.5) % 16;
+    return directions[index];
+}
+// Haversine formula to calculate the great-circle distance between two points
+function haversineDistance(lat1, lon1, lat2, lon2) {
+    const toRadians = (degree) => degree * Math.PI / 180;
+    const earthRadius = 3958.8; // Radius of the Earth in miles
+
+    const dLat = toRadians(lat2 - lat1);
+    const dLon = toRadians(lon2 - lon1);
+
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
+              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return earthRadius * c; // Distance in miles
+}
+
+// Function to store location X and calculate distance to location Y
+function distanceFromX(latX, lonX) {
+    return function(latY, lonY) {
+        return haversineDistance(latX, lonX, latY, lonY);
+    };
+}
+
+// Function to calculate the initial bearing from X to Y
+function calculateBearing(lat1, lon1, lat2, lon2) {
+    const φ1 = toRadians(lat1);
+    const φ2 = toRadians(lat2);
+    const Δλ = toRadians(lon2 - lon1);
+
+    const y = Math.sin(Δλ) * Math.cos(φ2);
+    const x = Math.cos(φ1) * Math.sin(φ2) - 
+              Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+
+    let bearing = toDegrees(Math.atan2(y, x));
+    
+    // Normalize the bearing to 0-360 degrees
+    bearing = (bearing + 360) % 360;
+
+    return bearing;
+}
+
+// Example usage:
+// const locationX = distanceFromX(37.7749, -122.4194); // San Francisco (latitude, longitude)
+
+// Compute the distance to New York City
+// const distance = locationX(40.7128, -74.0060); // New York City (latitude, longitude)
+
+// console.log(`Distance from San Francisco to New York City: ${distance.toFixed(2)} miles`);
+
+var map2 = null; var marker2 = null;
+function compute() {
+    let lat1 = document.getElementById("lat1").value;
+    let long1 =  document.getElementById("long1").value;
+    let lat2 = document.getElementById("lat2").value;
+    let long2 = document.getElementById("long2").value;
+    if (lat1 == "" || long1 == "" || lat2 == "" || long2 == "") return;
+    // console.log(lat1, long1, lat2, long2);
+    let dist = haversineDistance(lat1, long1, lat2, long2);
+    if (isNaN(dist)) return;
+    let bearing = calculateBearing(lat1, long1, lat2, long2)
+    document.getElementById("distance").innerHTML = Math.round(100*dist)/100 + " miles, bearing " + Math.round(100*bearing)/100 + " degrees (" + getCardinalDirection(bearing) + ")";
+    updateMap('map2', lat2, long2);
+}
+function updateMap(id, lat, long) {
+    // Initialize the map and set the view to your chosen coordinates and zoom level
+    if (map2 != null) {
+        map2.setView([lat, long], 13);
+        map2.removeLayer(marker2);
+        marker2 = L.marker([lat, long]).addTo(map2);
+    }
+    else {
+        map2 = L.map(id).setView([lat, long], 13);  // Replace with your lat/lng
+
+        // Add a tile layer (OpenStreetMap is used here, you can use others)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map2);
+
+        // Optionally add a marker at the same coordinates
+        // if (marker2 != null) marker2.setLatLong([lat, long]);
+        // else marker2 = 
+        marker2 = L.marker([lat, long]).addTo(map2);
+    }
+
+}
+</script>
+
+</head>
+
+<table>
+<tr>
+    <td class="lab"><label>Origin latitude:</label></td><td><input type="text" id="lat1" value="42.59064"></td>
+</tr>
+<tr>
+    <td class="lab"><label>Origin longitude:</label></td><td><input type="text" id="long1" value="-72.38941"></td>
+</tr>
+<tr>
+    <td class="lab"><label>Destination latitude:</label></td><td><input onkeyup="compute()" type="text" id="lat2"></td>
+</tr>
+<tr>
+    <td class="lab"><label>Destination longitude:</label></td><td><input onkeyup="compute()" type="text" id="long2"></td>
+</tr>
+
+<tr><td class="lab">Distance:</td><td><span id="distance"></span></td></tr>
+<!-- <tr><td></td><td><button onclick="compute()">Compute distance</button></td></tr> -->
+</table>
+
+Origin:
+<div id="map"></div>
+
+Destination:
+<div id="map2"></div>
+
+<script>
+    // Initialize the map and set the view to your chosen coordinates and zoom level
+    var map1 = L.map('map').setView([LAT, LONG], 13);  // Replace with your lat/lng
+
+    // Add a tile layer (OpenStreetMap is used here, you can use others)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map1);
+
+    // Optionally add a marker at the same coordinates
+    var marker1 = L.marker([LAT, LONG]).addTo(map1);
+</script>
+
+</body>
+
