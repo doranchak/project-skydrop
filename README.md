@@ -18,4 +18,4 @@ Coordinates for Mapdrop Run #1
 
 * 11/09/2024 09:38:  43.334625, -71.121584
 * 11/09/2024 09:53:  43.3345583, −71.12195
-* 11/09/2024 13:22:  43.3345583, −71.12195 (SimpleRat's reported coordinates)
+* 11/09/2024 13:22:  43.33446, −71.12183 (SimpleRat's reported coordinates)
