@@ -20,6 +20,17 @@ Copies of the post-trophy puzzles:
 
 ## Coordinates
 
+### Project Skydrop
+
+* Golden trophy / sculpture:  42.59164, -72.38908
+* Mountain clue:  40.10758, -117.47944
+* Bounty jar: 43.1443, -70.8767
+
+### Scroll Jar
+
+* JonlyBonly found jar first, at:  43.1270810, -70.8746823
+* Puzzle answer:  43.1270, -70.8746
+
 ### Mapdrop Run #1
 
 * 11/09/2024 09:38:  43.334625, -71.121584 (My first guess)
