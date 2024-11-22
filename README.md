@@ -13,7 +13,7 @@ These are some random tools I made during the Project Skydrop treasure hunt:
 
 ## Hunts
 
-### Project Skydrop
+### &#8594; Project Skydrop
 
 * [Clues](https://github.com/doranchak/project-skydrop/tree/main/puzzle-clues/01-project-skydrop)
 * [Final puzzle (gold jar)](https://doranchak.github.io/project-skydrop/matrix-final-puzzle.html)
@@ -24,7 +24,7 @@ These are some random tools I made during the Project Skydrop treasure hunt:
 * Mountain clue:  40.10758, -117.47944
 * Bounty jar: 43.1443, -70.8767
   
-### Scroll Jar
+### &#8594; Scroll Jar
 
 * [Scroll puzzle](https://doranchak.github.io/project-skydrop/scroll-puzzle.html)
 
@@ -33,7 +33,7 @@ These are some random tools I made during the Project Skydrop treasure hunt:
 * JonlyBonly found jar first, at:  43.1270810, -70.8746823
 * Puzzle answer:  43.1270, -70.8746
 
-### Mapdrop Run #1
+### &#8594; Mapdrop Run #1
 
 * [Clues](https://github.com/doranchak/project-skydrop/tree/main/puzzle-clues/03-mapdrop-run-1)
 * [Final puzzle (needs treasure map)](https://doranchak.github.io/project-skydrop/puzzle-clues/03-mapdrop-run-1/final-puzzle.html)
@@ -44,7 +44,7 @@ These are some random tools I made during the Project Skydrop treasure hunt:
 * 11/09/2024 09:53:  43.3345583, −71.12195 (My refined guess)
 * 11/09/2024 13:22:  43.33446, −71.12183 (SimpleRat's reported coordinates)
   
-### Mapdrop Run #2
+### &#8594; Mapdrop Run #2
 
 * [Clues](https://github.com/doranchak/project-skydrop/tree/main/puzzle-clues/04-mapdrop-run-2)
   
