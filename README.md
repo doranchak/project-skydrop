@@ -114,6 +114,7 @@ Circle coordinates:
 | 15 | 11/27/2024 |  |  |  |
 
 * [Clues](https://github.com/doranchak/project-skydrop/tree/main/puzzle-clues/04-mapdrop-run-2)
+* [Final puzzle (needs treasure map)](https://doranchak.github.io/project-skydrop/puzzle-clues/04-mapdrop-run-2/final-puzzle.html)
   
 #### Coordinates 
 
