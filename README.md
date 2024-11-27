@@ -119,3 +119,11 @@ Circle coordinates:
 #### Coordinates 
 
 * 11/20/2024 18:00 (approx):  43.032, -71.013 (Dan Leonard's reported coordinates)
+
+### &#8594; Mapdrop Run #3
+
+Circle coordinates:
+
+| Day# | Date | Latitude | Longitude | Circle Diameter (Miles) |
+| ---- | ---- | -------- | --------- | ----------------------- |
+| 1 | 11/27/2024 | 43.199073 | -70.8733 | 95.159782186964 |
