@@ -111,7 +111,7 @@ Circle coordinates:
 | 12 | 11/24/2024 | 43.03754621 | -71.02049264 | 3.853097652 |
 | 13 | 11/25/2024 | 43.03955106 | -71.01361197 | 2.261474628 |
 | 14	| 11/26/2024	| 43.03167088	| -71.01878503	| 0.9999987093 |
-| 15 | 11/27/2024 |  |  |  |
+| 15	| 11/27/2024	| 43.03197	| -71.01387 | 0.0001881570527 |
 
 * [Clues](https://github.com/doranchak/project-skydrop/tree/main/puzzle-clues/04-mapdrop-run-2)
 * [Final puzzle (needs treasure map)](https://doranchak.github.io/project-skydrop/puzzle-clues/04-mapdrop-run-2/final-puzzle.html)
