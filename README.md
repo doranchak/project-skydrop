@@ -15,6 +15,9 @@ These are some random tools I made during the Project Skydrop treasure hunt:
 
 ### &#8594; Project Skydrop
 
+Golden trophy value: $26,948.30 (fluctuates based on the value of gold)
+Bounty jar amount: $87,600
+
 * [Clues](https://github.com/doranchak/project-skydrop/tree/main/puzzle-clues/01-project-skydrop)
 * [Final puzzle (gold jar)](https://doranchak.github.io/project-skydrop/matrix-final-puzzle.html)
 
@@ -53,6 +56,8 @@ Circles:
   
 ### &#8594; Scroll Jar
 
+Final bounty amount: TODO
+
 * [Scroll puzzle](https://doranchak.github.io/project-skydrop/scroll-puzzle.html)
 
 #### Coordinates
@@ -62,6 +67,7 @@ Circles:
 
 ### &#8594; Mapdrop Run #1
 
+Final bounty amount: $1,980
 Circle coordinates:
 
 | Day# | Date | Latitude | Longitude | Circle Diameter (Miles) |
@@ -93,6 +99,7 @@ Circle coordinates:
   
 ### &#8594; Mapdrop Run #2
 
+Final bounty amount: $750 
 Circle coordinates:
 
 | Day# | Date | Latitude | Longitude | Circle Diameter (Miles) |
@@ -122,6 +129,7 @@ Circle coordinates:
 
 ### &#8594; Mapdrop Run #3
 
+Final bounty amount: $480
 Circle coordinates:
 
 | Day# | Date | Latitude | Longitude | Circle Diameter (Miles) |
