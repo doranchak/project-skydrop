@@ -57,7 +57,7 @@ Circles:
   
 ### &#8594; Scroll Jar
 
-Final bounty amount: TODO
+Final bounty amount: $500 (to solve the 12 words), $2000 (to find the scroll jar and supply a solution video)
 
 * [Scroll puzzle](https://doranchak.github.io/project-skydrop/scroll-puzzle.html)
 
