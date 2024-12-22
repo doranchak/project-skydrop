@@ -156,6 +156,8 @@ Circle coordinates:
 
 ### &#8594; Mapdrop Run #4
 
+Final bounty amount: $420
+
 Circle coordinates:
 
 | Day# | Date | Latitude | Longitude | Circle Diameter (Miles) |
