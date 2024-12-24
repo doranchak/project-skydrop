@@ -154,6 +154,8 @@ Circle coordinates:
 | 14 | 12/10/2024 | 43.38847067	| -71.17395868	| 0.9999987093 |
 | 15 | 12/11/2024 | 43.38971	| -71.17074	| 0.0001881570527 |
 
+* [Clues](https://github.com/doranchak/project-skydrop/tree/main/puzzle-clues/05-mapdrop-run-3)
+
 ### &#8594; Mapdrop Run #4
 
 Final bounty amount: $420
@@ -178,4 +180,6 @@ Circle coordinates:
 | 14 | 12/20/2024 | 42.940132219836 | -71.133971001047 | 0.99999870931694 |
 | 15 | 12/21/2024 | 42.94276 | -71.13169 | 0.00018815705273 |
 
+* [Clues](https://github.com/doranchak/project-skydrop/tree/main/puzzle-clues/06-mapdrop-run-4)
+  
 Josh's guess: 42.94222, -71.13083 (about 300 feet away)
